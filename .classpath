@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/spring-data-commons-1.5.0.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/common-lang3.jar"/>
+	<classpathentry kind="lib" path="lib/apache-log4j-2.6.2-bin.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

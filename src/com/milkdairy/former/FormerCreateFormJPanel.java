@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import com.milkdairy.fileservice.MilkDairyPersistenceManager;
@@ -20,6 +21,7 @@ import com.milkdairy.managedobjects.Former;
 import com.milkdairy.services.AlphabatField;
 import com.milkdairy.services.CustomInitialSelectionComboBox;
 import com.milkdairy.services.DateTimePicker;
+import com.milkdairy.services.DateTimeUtil;
 import com.milkdairy.services.IntergerField;
 import com.milkdairy.services.MilkManagementSystemService;
 
@@ -27,7 +29,7 @@ public class FormerCreateFormJPanel extends JPanel {
 
 	private MilkDairyPersistenceManager persistenceManager;
 
-
+	private static final Logger LOG = Logger.getLogger(FormerCreateFormJPanel.class);
 	public void setPersistenceManager(MilkDairyPersistenceManager persistenceManager) {
 		this.persistenceManager = persistenceManager;
 	}
@@ -385,31 +387,33 @@ public class FormerCreateFormJPanel extends JPanel {
 					former.setId(idT.getText().trim());
 					former.setName(nameT.getText());
 					former.setPhoneNum(phoneNumT.getText());
-					former.setStartdate(startdateTimePicker.getDate().toString());
-					//System.out.println(startdateTimePicker.getDate().toString());
+					former.setStartdate(DateTimeUtil.convertdateToStringeWithTime(startdateTimePicker.getDate()));
 					former.setEmail(emailT.getText());
 					String address=addressTA.getText();
 					address=address.replaceAll(",", "");
 					address=address.replace('\n', ':');
 					former.setAddress(address);
-					formEmpty();
 					persistenceManager.save(former);
+					formEmpty();
 				}
 			}
 		});
 
 		this.reset.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				System.out
-						.println("Im in Former create and update reset action");
-				formEmpty();
-				
+				formEmpty();		
 			}
 		});
 		this.search.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				System.out
-						.println("Im in Former create and update search action");
+				String forID = (String) formerIDCombo.getSelectedItem();
+				String forName = (String) formerNameCombo.getSelectedItem();
+				Former former=persistenceManager.getFormerBy(forID, forName);
+				idT.setText(former.getId());
+				nameT.setText(former.getName());
+				phoneNumT.setText(former.getPhoneNum());
+				addressTA.setText(former.getAddress());
+				emailT.setText(former.getEmail());
 			}
 		});
 

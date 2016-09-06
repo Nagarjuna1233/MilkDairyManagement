@@ -1,7 +1,6 @@
 package com.milkdairy.services;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 public class DateTimeUtil {
@@ -62,6 +61,11 @@ public class DateTimeUtil {
 	public static String convertdateToStringeWithTime(Date date) {
 
 		return DATE_TIME_FORMAT.format(date);
+	}
+	
+	public static String getOnlyDate(Date date) {
+        String values[]=DATE_TIME_FORMAT.format(date).split(" ");
+		return values[0];
 	}
 
 }

@@ -5,13 +5,11 @@
  */
 package com.milkdairy.admin;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -25,22 +23,29 @@ import com.milkdairy.users.LoginJFrame;
  * @author nagarjuna
  */
 public class MilkDairyManagement {
-        public static void main(String[] args) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                    	Resource resource=new ClassPathResource("applicationContext.xml");
-                    	BeanFactory factory=new XmlBeanFactory(resource);
- 
-                    	JPanel milkDairyManagementJPanel=(MilkDairyManagementJPanel)factory.getBean("milkDairyManagementJPanel");
-                    	
-                        UIManager.put("swing.boldmetal", Boolean.FALSE);
-                        
-                        new LoginJFrame(milkDairyManagementJPanel,(LoggingService)factory.getBean("loggingService")).setVisible(true);
-                        
-                    }
+	private static final Logger LOG = Logger
+			.getLogger(MilkDairyManagement.class);
 
-                });
-        }
-       
-    
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				LOG.trace("Executing main()......");
+				Resource resource = new ClassPathResource(
+						"applicationContext.xml");
+				BeanFactory factory = new XmlBeanFactory(resource);
+
+				JPanel milkDairyManagementJPanel = (MilkDairyManagementJPanel) factory
+						.getBean("milkDairyManagementJPanel");
+
+				UIManager.put("swing.boldmetal", Boolean.FALSE);
+
+				new LoginJFrame(milkDairyManagementJPanel,
+						(LoggingService) factory.getBean("loggingService"))
+						.setVisible(true);
+
+			}
+
+		});
+	}
+
 }
