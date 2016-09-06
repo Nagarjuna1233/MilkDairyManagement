@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+<!-- <bean id="headerJPanel" class="com.milkdairy.admin.MilkManagementHeader">
+<constructor-arg index="0" value="MILK DAIRY MANAGEMENT"/>
+<constructor-arg index="1" value="0XFFFFF0"/>
+<constructor-arg index="2" value="0000FFFF"/>
+<constructor-arg index="3" value="Serif"/>
+<constructor-arg index="4" value="4"/>
+<constructor-arg index="5" value="20"/>
+<constructor-arg index="6" value="120"/>
+</bean> -->
+<bean id="headerJPanel" class="com.milkdairy.admin.MilkManagementHeader" init-method="init" scope="prototype">
+<property name="appName" value="MILK DAIRY MANAGEMENT"/>
+<property name="backGroundcolor" value="0XFFFF00"/>
+<property name="foreGroundcolor" value="0000FFFF"/>
+<property name="fontName" value="Serif"/>
+<property name="fontStyle" value="4"/>
+<property name="fontSize" value="20"/>
+<property name="height" value="120"/>
+</bean>
+
+<bean id="milkManagementSystemService" class="com.milkdairy.services.MilkManagementSystemService">
+<property name="xPoint" value="100"/>
+<property name="yPoint" value="100"/>
+<property name="lblWidth" value="100"/>
+<property name="lblHeight" value="20"/>
+<property name="tfWidth" value="200"/>
+<property name="tflHeight" value="30" />
+</bean>
+
+<!-- former-->
+<bean id="formerCreateJPanel" class="com.milkdairy.former.FormerCreateJPanel" init-method="init" >
+<property name="header"  ref="headerJPanel"/>
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/>
+<property name="formerCreateFormJPanel" ref="formerCreateFormJPanel"/>
+</bean>
+<bean id="formerCreateFormJPanel" class="com.milkdairy.former.FormerCreateFormJPanel" init-method="init" >
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/>
+<property name="persistenceManager" ref="persistenceManager"/>
+<property name="panelTitle" value="Former Create And Update Panel"/>
+<property name="fontName" value="Serif"/>
+<property name="fontStyle" value="4"/>
+<property name="fontSize" value="20"/>
+<property name="color"  value="#80bfff"/>
+</bean>
+
+<bean id="formerUpdateJPanel" class="com.milkdairy.former.FormerUpdateJPanel" init-method="init" >
+<property name="header"  ref="headerJPanel"/>
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/>
+</bean>
+<bean id="formerReportsJPanel" class="com.milkdairy.former.FormerReportsJPanel" init-method="init" >
+<property name="header"  ref="headerJPanel"/>
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/>
+</bean>
+
+<bean id="formerModuleJPanel" class="com.milkdairy.former.FormerModuleJPanel" init-method="init" >
+<property name="formerCreateTab"  ref="formerCreateJPanel"/>
+<property name="formerUpdateTab" ref="formerUpdateJPanel"/>
+<property name="formerReportsTab"  ref="formerReportsJPanel"/>
+</bean>
+
+<!-- CollectionModule -->
+<!-- CollectionModule Stored from-->
+<bean id="collectionsStoredFormJPanel" class="com.milkdairy.collectionsmodule.CollectionsStoredFormJPanel" init-method="init" >
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/>
+<property name="persistenceManager" ref="persistenceManager"/>
+<property name="color"  value="#80bfff"/>
+</bean>
+
+<!-- CollectionModule stored Jpanel -->
+<bean id="collectionsStoredJPanel" class="com.milkdairy.collectionsmodule.CollectionsStoredJPanel" init-method="init" >
+<property name="header"  ref="headerJPanel"/>
+<property name="storedFormJPanel" ref="collectionsStoredFormJPanel"/>
+</bean>
+
+<!-- CollectionModule Update form-->
+<bean id="collectionsUpdateFormJPanel" class="com.milkdairy.collectionsmodule.CollectionsUpdateFormJPanel" init-method="init" >
+<property name="milkManagementSystemService" ref="milkManagementSystemService"/> 
+<property name="persistenceManager" ref="persistenceManager"/>
+<property name="color"  value="#80bfff"/>
+</bean>
+
+<!-- CollectionModule update panel-->
+<bean id="collectionsUpdateJPanel" class="com.milkdairy.collectionsmodule.CollectionsUpdateJPanel" init-method="init" >
+<property name="header"  ref="headerJPanel"/>
+<property name="storedFormJPanel" ref="collectionsUpdateFormJPanel"/>
+</bean>
+
+<!-- CollectionModule Jpanel-->
+<bean id="collectionsModuleJPanel" class="com.milkdairy.collectionsmodule.CollectionsModuleJPanel" init-method="init">
+<property name="collectionsStoredTab" ref="collectionsStoredJPanel" />
+<property name="collectionsUpdateTab" ref="collectionsUpdateJPanel"/>
+</bean>
+
+
+<bean id="milkDairyManagementJPanel" class="com.milkdairy.admin.MilkDairyManagementJPanel" init-method="init" >
+<property name="collectionsModuleTab" ref="collectionsModuleJPanel"/>
+<property name="formerModuleTab" ref="formerModuleJPanel"/>
+</bean>
+
+<bean id="milkFilePathProvider" class="com.milkdairy.fileservice.MilkFilePathProvider">
+<property name="homePath" value="F://NagarjunaAndroidFolder/Temp" />
+</bean>
+
+<bean class="com.milkdairy.services.DateTimeService" />
+
+<bean id="milkDairyFileUtiles" class="com.milkdairy.fileservice.MilkDairyFileUtiles">
+<property name="filePathProvider" ref="milkFilePathProvider"/>
+</bean>
+
+<bean id="persistenceManager" class="com.milkdairy.fileservice.MilkDairyPersistenceManager" init-method="dataSourceInit">
+<property name="driverName" value="org.hsqldb.jdbcDriver"/>
+<property name="dbName" value="milkDairyDB"/>
+<property name="userName" value="sa" />
+<property name="passWord" value="" />
+</bean>
+
+<bean id="loggingService" class="com.milkdairy.users.LoggingService">
+<property name="persistenceManager" ref="persistenceManager"/>
+</bean>
+<!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+    <property name="url" value="jdbc:hsqldb:milkDairyDB"/>
+    <property name="username" value="SA"/>
+    <property name="password" value=""/>
+</bean> -->
+
+</beans>
