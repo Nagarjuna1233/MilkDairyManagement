@@ -3,10 +3,10 @@ package com.milkdairy.collectionsmodule;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +15,7 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -22,7 +23,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
@@ -44,8 +45,15 @@ import com.milkdairy.services.MilkManagementSystemService;
  * @author nagarjuna
  */
 public class CollectionsStoredFormJPanel extends JPanel {
+	
+	public CollectionsStoredFormJPanel(){
+		super();
+	}
 
 	private MilkDairyPersistenceManager persistenceManager;
+	private static final Logger LOG = Logger
+			.getLogger(CollectionsStoredFormJPanel.class);
+	private final static int FORM_TABLE_COL_COUNT = 6;
 
 	public void setPersistenceManager(
 			MilkDairyPersistenceManager persistenceManager) {
@@ -85,6 +93,19 @@ public class CollectionsStoredFormJPanel extends JPanel {
 
 	private String ids[] = new String[] {};
 
+	Object[][] rowData = { {} };
+	JTable collectionDisplayJTab;
+	String milkColumnNames[] = { "FormerID", "Name", "PadVale", "Qunty",
+			"Price", "Date" };
+	JComboBox<String> searchAMPMComboBox;
+	JComboBox<String> searchIdComboBox;
+	JPanel milkDisplayBaseJP;
+	JPanel colSearchItemsJP;
+	private JDatePickerImpl searchDatePicker;
+	private JButton searchResetBtn;
+	private final static String AM_PM[] = { "AM", "PM" };
+	JScrollPane scrollPane;
+
 	public void setMilkManagementSystemService(
 			MilkManagementSystemService milkManagementSystemService) {
 		this.milkManagementSystemService = milkManagementSystemService;
@@ -93,12 +114,16 @@ public class CollectionsStoredFormJPanel extends JPanel {
 	public void setColor(String color) {
 		this.color = color;
 	}
-
+    @SuppressWarnings("unchecked")
+	public void addItemToIdCombox(String item){
+    	formerIDCombo.addItem(item);
+    	searchIdComboBox.addItem(item);
+    }
 	public void init() {
 		this.setLayout(null);
 		System.setProperty("collectionsStoredFormColor", this.color);
 		this.setBackground(Color.getColor("collectionsStoredFormColor"));
-		List<String> formerIds = persistenceManager.getFormerValues("id");
+		List<String> formerIds = persistenceManager.getFormerByProperty("id");
 		if (!CollectionUtils.isEmpty(formerIds)) {
 			ids = new String[formerIds.size()];
 			formerIds.toArray(ids);
@@ -294,41 +319,243 @@ public class CollectionsStoredFormJPanel extends JPanel {
 					collection.setPadValue(milkPadTF.getText());
 					collection.setMilkQuantity(milkValueTF.getText());
 					collection.setMilkPrice(milkPriceTF.getText());
-					collection.setTimeStemp(DateTimeUtil
+					String dateValue = DateTimeUtil
 							.convertdateToStringeWithTime(startdateTimePicker
-									.getDate()));
-					persistenceManager.save(collection);
+									.getDate());
+					collection.setTimeStemp(dateValue);
+					String amPM = dateValue.substring(dateValue.length() - 2).trim();
+					//LOG.info("AMPM "+amPM);
+					if (CollectionUtils.isEmpty(persistenceManager.getCollectionsBy(
+							formerIDCombo.getSelectedItem().toString(),
+							formerNameTF.getText(), amPM, DateTimeUtil
+									.getOnlyDate(startdateTimePicker.getDate())))) {
+						persistenceManager.save(collection);
+						doFormEmpty();
+						addTableData(collection);
+					} else {
+						JOptionPane.showMessageDialog(
+								CollectionsStoredFormJPanel.this,
+								"This collection alredy exist",
+								"Coded Message", JOptionPane.ERROR_MESSAGE);
+					}
+
 					// PadValue padVal=new PadValue();
 					// padVal.setCreationTime(new Date());
 					// padVal.setValue(10.34);
 					// persistenceManager.save(padVal);
-					doFormEmpty();
-					resetTableData();
+					
 				}
 			}
 		});
 
 		this.resetBtn.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-
 				doFormEmpty();
-				System.out
-						.println("Im in Former create and reset submit action");
 			}
 		});
-		// this.formerIDCombo.add
-		this.formerIDCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				String name = (String) formerIDCombo.getSelectedItem();
-				if (StringUtils.isNotEmpty(name)) {
-					Former searchResult = persistenceManager.getFormerNameBY(
-							name.trim(), "");
-					if (null != searchResult) {
-						formerNameTF.setText(searchResult.getName());
-					}
+		this.searchAMPMComboBox.addItemListener(new AMPMComboBoxItemLister());
+		this.searchIdComboBox.addItemListener(new IDComboBoxItemListener());
+		this.searchDatePicker
+				.addActionListener(new DatePickComboBoxActionListener());
+		this.formerIDCombo.addItemListener(new FormerIDComboxItemListener());
+
+	}
+
+	public void displyMilkTable() {
+
+		GridLayout milkDisplaySearchDL = new GridLayout(4, 0);
+		milkDisplaySearchDL.setHgap(2);
+		milkDisplaySearchDL.setVgap(2);
+		milkDisplayBaseJP = new JPanel();
+		colSearchItemsJP = new JPanel();
+		List<Collection> colArray = persistenceManager.getAllCollections();
+		if (!CollectionUtils.isEmpty(colArray)) {
+			rowData = new Object[colArray.size()][FORM_TABLE_COL_COUNT];
+			for (int rowCount = 0; rowCount < rowData.length; rowCount++) {
+				rowData[rowCount][0] = colArray.get(rowCount).getFormerID();
+				rowData[rowCount][1] = colArray.get(rowCount).getFormerName();
+				rowData[rowCount][2] = colArray.get(rowCount).getMilkPad();
+				rowData[rowCount][3] = colArray.get(rowCount).getMilkQuantity();
+				rowData[rowCount][4] = colArray.get(rowCount).getMilkPrice();
+				rowData[rowCount][5] = colArray.get(rowCount).getTimeStemp();
+
+			}
+		}
+
+		UtilDateModel model = new UtilDateModel();
+		// model.setDate(2016, 04, 16);
+		model.setValue(new Date());
+		model.setSelected(true);
+
+		Properties p = new Properties();
+		p.put("text.today", "Today");
+		p.put("text.month", "Month");
+		p.put("text.year", "Year");
+		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+
+		searchDatePicker = new JDatePickerImpl(datePanel,
+				new DateLabelFormatter());
+		collectionDisplayJTab = new JTable(new MilkTableModel(rowData,
+				milkColumnNames));
+		scrollPane = new JScrollPane(collectionDisplayJTab);
+
+		searchAMPMComboBox = new JComboBox<String>(AM_PM);
+		searchIdComboBox = new JComboBox<String>(ids);
+		collectionDisplayJTab.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		searchResetBtn=new JButton("Reset");
+		searchResetBtn.addActionListener(new SearchRestBtnActionListener());
+		// amPMComboBox.setSelectedIndex(defaultMode);
+		colSearchItemsJP.add(searchIdComboBox);
+		colSearchItemsJP.add(searchAMPMComboBox);
+		colSearchItemsJP.add(searchDatePicker);
+		colSearchItemsJP.add(searchResetBtn);
+		milkDisplayBaseJP.add(colSearchItemsJP, BorderLayout.EAST);
+		milkDisplayBaseJP.add(scrollPane, BorderLayout.CENTER);
+	}
+
+	public void addTableData(Collection collection) {
+		DefaultTableModel tableModel = (DefaultTableModel) collectionDisplayJTab
+				.getModel();
+		String[] addNewRowData = new String[FORM_TABLE_COL_COUNT];
+		addNewRowData[0] = collection.getFormerID();
+		addNewRowData[1] = collection.getFormerName();
+		addNewRowData[2] = collection.getMilkPad();
+		addNewRowData[3] = collection.getMilkQuantity();
+		addNewRowData[4] = collection.getMilkPrice();
+		addNewRowData[5] = collection.getTimeStemp();
+		tableModel.insertRow(0, addNewRowData);
+		tableModel.fireTableDataChanged();
+	}
+
+	public void refreshDataFilter(List<Collection> colList) {
+
+		if (!CollectionUtils.isEmpty(colList)) {
+			DefaultTableModel tableModel = (DefaultTableModel) collectionDisplayJTab
+					.getModel();
+			tableModel.setRowCount(0);
+			String[] addNewRowData = new String[FORM_TABLE_COL_COUNT];
+			for (Collection collection : colList) {
+				addNewRowData[0] = collection.getFormerID();
+				addNewRowData[1] = collection.getFormerName();
+				addNewRowData[2] = collection.getMilkPad();
+				addNewRowData[3] = collection.getMilkQuantity();
+				addNewRowData[4] = collection.getMilkPrice();
+				addNewRowData[5] = collection.getTimeStemp();
+				tableModel.addRow(addNewRowData);
+			}
+			tableModel.fireTableDataChanged();
+		}
+
+	}
+
+	class AMPMComboBoxItemLister implements ItemListener {
+		public void itemStateChanged(ItemEvent paramItemEvent) {
+			if (paramItemEvent.getStateChange() == ItemEvent.SELECTED) {
+				String item = (String) paramItemEvent.getItem();
+				List<Collection> amPmColList = persistenceManager
+						.getCollectionsBy("", "", item, "");
+				if(CollectionUtils.isEmpty(amPmColList)){
+					JOptionPane.showMessageDialog(
+							CollectionsStoredFormJPanel.this,
+							"Collection not exist",
+							"Coded Message", JOptionPane.INFORMATION_MESSAGE);
+				}else{
+				refreshDataFilter(amPmColList);
 				}
 			}
-		});
+		}
+	};
+
+	class IDComboBoxItemListener implements ItemListener {
+		@Override
+		public void itemStateChanged(ItemEvent paramItemEvent) {
+			if (paramItemEvent.getStateChange() == ItemEvent.SELECTED) {
+				String item = (String) paramItemEvent.getItem();
+				List<Collection> idColList = persistenceManager
+						.getCollectionsBy(item, "", "", "");
+				if(CollectionUtils.isEmpty(idColList)){
+					JOptionPane.showMessageDialog(
+							CollectionsStoredFormJPanel.this,
+							"Collection not exist",
+							"Coded Message", JOptionPane.INFORMATION_MESSAGE);
+				}
+				else{
+				refreshDataFilter(idColList);
+				}
+			}
+
+		}
+
+	};
+
+	class DatePickComboBoxActionListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent paramActionEvent) {
+			List<Collection> idColList = persistenceManager.getCollectionsBy(
+					"", "", "", DateTimeUtil
+							.getOnlyDate((Date) searchDatePicker.getModel()
+									.getValue()));
+			if(CollectionUtils.isEmpty(idColList)){
+				JOptionPane.showMessageDialog(
+						CollectionsStoredFormJPanel.this,
+						"Collection not exist",
+						"Coded Message", JOptionPane.INFORMATION_MESSAGE);
+			}else{
+			refreshDataFilter(idColList);
+			}
+		}
+
+	};
+	class SearchRestBtnActionListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent paramActionEvent) {
+			List<Collection> idColList = persistenceManager.getAllCollections();
+			if(CollectionUtils.isEmpty(idColList)){
+				JOptionPane.showMessageDialog(
+						CollectionsStoredFormJPanel.this,
+						"Collection not exist",
+						"Coded Message", JOptionPane.INFORMATION_MESSAGE);
+			}else{
+			refreshDataFilter(idColList);
+			}
+		}
+
+	};
+	
+	class FormerIDComboxItemListener implements ItemListener {
+		@Override
+		public void itemStateChanged(ItemEvent paramItemEvent) {
+			if (paramItemEvent.getStateChange() == ItemEvent.SELECTED) {
+				String item = (String) paramItemEvent.getItem();
+				Former searchFormer = persistenceManager
+						.getFormerBy(item, "");
+				formerNameTF.setText(searchFormer.getName());
+			}
+
+		}
+
+	};
+
+	class MilkTableModel extends DefaultTableModel {
+		public MilkTableModel(Object[][] rowData, String[] columnNames) {
+			// TODO Auto-generated constructor stub
+			super(rowData, columnNames);
+		}
+
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return false;
+		}
+
+	}
+
+	public void doFormEmpty() {
+		formerIDCombo.setSelectedIndex(-1);
+		formerNameTF.setText("");
+		milkPriceTF.setText("");
+		milkPadTF.setText("");
+		milkValueTF.setText("");
+		milkPriceTF.setText("");
 	}
 
 	public JTextField addComponent(JTextField comp, int xx, int yy, int width,
@@ -365,168 +592,5 @@ public class CollectionsStoredFormJPanel extends JPanel {
 		// comp.setOpaque(true);
 		this.add(comp);
 		return comp;
-	}
-
-	public void doFormEmpty() {
-		formerIDCombo.setSelectedIndex(-1);
-		formerNameTF.setText("");
-		milkPriceTF.setText("");
-		milkPadTF.setText("");
-		milkValueTF.setText("");
-		milkPriceTF.setText("");
-	}
-
-	Object[][] rowData = { {} };
-	JTable collectionDisplayJTab;
-	String milkColumnNames[] = { "FormerID", "Name", "PadVale", "Qunty",
-			"Price", "Date" };
-	JComboBox<String> amPMComboBox;
-	JComboBox<String> idComboBox;
-	JPanel milkDisplayBaseJP;
-	JPanel ampmJP;
-	private JDatePickerImpl datePicker;
-	private final static String AM_PM[] = { "AM", "PM" };
-
-	public void displyMilkTable() {
-
-		GridLayout milkDisplaySearchDL = new GridLayout(4, 0);
-		milkDisplaySearchDL.setHgap(2);
-		milkDisplaySearchDL.setVgap(2);
-		milkDisplayBaseJP = new JPanel();
-		ampmJP = new JPanel();
-		List<Collection> colArray = persistenceManager.getAllCollections();
-		try {
-			persistenceManager
-					.showCollectionRow("SELECT * FROM Collection WHERE formerID='1'");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (!CollectionUtils.isEmpty(colArray)) {
-			rowData = new Object[colArray.size()][6];
-			for (int rowCount = 0; rowCount < rowData.length; rowCount++) {
-				rowData[rowCount][0] = colArray.get(rowCount).getFormerID();
-				rowData[rowCount][1] = colArray.get(rowCount).getFormerName();
-				rowData[rowCount][2] = colArray.get(rowCount).getMilkPad();
-				rowData[rowCount][3] = colArray.get(rowCount).getMilkQuantity();
-				rowData[rowCount][4] = colArray.get(rowCount).getMilkPrice();
-				rowData[rowCount][5] = colArray.get(rowCount).getTimeStemp();
-
-			}
-		}
-
-		UtilDateModel model = new UtilDateModel();
-		// model.setDate(2016, 04, 16);
-		model.setValue(new Date());
-		model.setSelected(true);
-
-		Properties p = new Properties();
-		p.put("text.today", "Today");
-		p.put("text.month", "Month");
-		p.put("text.year", "Year");
-		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
-
-		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-		collectionDisplayJTab = new JTable(new MilkTableModel(rowData,
-				milkColumnNames));
-		JScrollPane scrollPane = new JScrollPane(collectionDisplayJTab);
-
-		amPMComboBox = new JComboBox<String>(AM_PM);
-		idComboBox = new JComboBox<String>(ids);
-		collectionDisplayJTab.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		// amPMComboBox.setSelectedIndex(defaultMode);
-		amPMComboBox.addItemListener(new AMPMComboBoxItemLister());
-		idComboBox.addItemListener(new IDComboBoxItemListener());
-		ampmJP.add(idComboBox);
-		ampmJP.add(amPMComboBox);
-		ampmJP.add(datePicker);
-		milkDisplayBaseJP.add(ampmJP, BorderLayout.EAST);
-		milkDisplayBaseJP.add(scrollPane, BorderLayout.CENTER);
-	}
-
-	public void resetTableData() {
-		DefaultTableModel tableModel = (DefaultTableModel) collectionDisplayJTab
-				.getModel();
-		tableModel.setRowCount(0);
-		List<Collection> colArray = persistenceManager.getAllCollections();
-
-		if (!CollectionUtils.isEmpty(colArray)) {
-			for (int rowCount = 0; rowCount < rowData.length; rowCount++) {
-				rowData[rowCount][0] = colArray.get(rowCount).getFormerID();
-				rowData[rowCount][1] = colArray.get(rowCount).getFormerName();
-				rowData[rowCount][2] = colArray.get(rowCount).getMilkPad();
-				rowData[rowCount][3] = colArray.get(rowCount).getMilkQuantity();
-				rowData[rowCount][4] = colArray.get(rowCount).getMilkPrice();
-				rowData[rowCount][5] = colArray.get(rowCount).getTimeStemp();
-				tableModel.addRow(rowData);
-			}
-		}
-		//collectionDisplayJTab.setModel(tableModel);
-		tableModel.fireTableDataChanged();
-		
-	}
-
-	class AMPMComboBoxItemLister implements ItemListener {
-		public void itemStateChanged(ItemEvent e) {
-			List<Collection> colArray = persistenceManager.getAllCollections();
-
-			if (!CollectionUtils.isEmpty(colArray)) {
-				System.out.println("List size " + colArray.size());
-				rowData = new Object[colArray.size()][6];
-				for (int rowCount = 0; rowCount < rowData.length; rowCount++) {
-					rowData[rowCount][0] = colArray.get(rowCount).getFormerID();
-					rowData[rowCount][1] = colArray.get(rowCount)
-							.getFormerName();
-					rowData[rowCount][2] = colArray.get(rowCount).getMilkPad();
-					rowData[rowCount][3] = colArray.get(rowCount)
-							.getMilkQuantity();
-					rowData[rowCount][4] = colArray.get(rowCount)
-							.getMilkPrice();
-					rowData[rowCount][5] = colArray.get(rowCount)
-							.getTimeStemp();
-
-				}
-				collectionDisplayJTab = new JTable(new MilkTableModel(rowData,
-						milkColumnNames));
-			}
-		}
-	};
-
-	class IDComboBoxItemListener implements ItemListener {
-		public void itemStateChanged(ItemEvent e) {
-			List<Collection> colArray = persistenceManager.getAllCollections();
-
-			if (!CollectionUtils.isEmpty(colArray)) {
-				rowData = new Object[colArray.size()][6];
-				for (int rowCount = 0; rowCount < rowData.length; rowCount++) {
-					rowData[rowCount][0] = colArray.get(rowCount).getFormerID();
-					rowData[rowCount][1] = colArray.get(rowCount)
-							.getFormerName();
-					rowData[rowCount][2] = colArray.get(rowCount).getMilkPad();
-					rowData[rowCount][3] = colArray.get(rowCount)
-							.getMilkQuantity();
-					rowData[rowCount][4] = colArray.get(rowCount)
-							.getMilkPrice();
-					rowData[rowCount][5] = colArray.get(rowCount)
-							.getTimeStemp();
-
-				}
-				collectionDisplayJTab = new JTable(new MilkTableModel(rowData,
-						milkColumnNames));
-			}
-		}
-	};
-
-	class MilkTableModel extends DefaultTableModel {
-		public MilkTableModel(Object[][] rowData, String[] columnNames) {
-			// TODO Auto-generated constructor stub
-			super(rowData, columnNames);
-		}
-
-		@Override
-		public boolean isCellEditable(int row, int column) {
-			return false;
-		}
-
 	}
 }

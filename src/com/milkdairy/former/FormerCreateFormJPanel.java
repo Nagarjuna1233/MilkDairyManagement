@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -16,6 +17,7 @@ import javax.swing.JTextField;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
+import com.milkdairy.collectionsmodule.CollectionsStoredFormJPanel;
 import com.milkdairy.fileservice.MilkDairyPersistenceManager;
 import com.milkdairy.managedobjects.Former;
 import com.milkdairy.services.AlphabatField;
@@ -23,6 +25,7 @@ import com.milkdairy.services.CustomInitialSelectionComboBox;
 import com.milkdairy.services.DateTimePicker;
 import com.milkdairy.services.DateTimeUtil;
 import com.milkdairy.services.IntergerField;
+import com.milkdairy.services.MDMValidationUtil;
 import com.milkdairy.services.MilkManagementSystemService;
 
 public class FormerCreateFormJPanel extends JPanel {
@@ -35,21 +38,21 @@ public class FormerCreateFormJPanel extends JPanel {
 	}
 	
 	private JLabel headdingL;
-	private JLabel idL;
+	//private JLabel idL;
 	private JLabel phoneNumL;
 	private JLabel nameL;
 	private JLabel startDateL;
 	private JLabel addressL;
 	private JLabel emailL;
 
-	private JLabel idError;
+	//private JLabel idError;
 	private JLabel phoneNumError;
 	private JLabel nameError;
 	private JLabel startDateError;
 	private JLabel addressError;
 	private JLabel emailError;
 
-	private JTextField idT;
+	//private JTextField idT;
 	private IntergerField phoneNumT;
 	private AlphabatField nameT;
 	private JTextField emailT;
@@ -67,9 +70,16 @@ public class FormerCreateFormJPanel extends JPanel {
 
 	private JComboBox<String> formerIDCombo;
 
-	private JComboBox<String> formerNameCombo;
+	//private JComboBox<String> formerNameCombo;
 
 	private MilkManagementSystemService milkManagementSystemService;
+	
+	private CollectionsStoredFormJPanel collectionsStoredFormJPanel;
+
+	public void setCollectionsStoredFormJPanel(
+			CollectionsStoredFormJPanel collectionsStoredFormJPanel) {
+		this.collectionsStoredFormJPanel = collectionsStoredFormJPanel;
+	}
 
 	public String getColor() {
 		return color;
@@ -85,6 +95,9 @@ public class FormerCreateFormJPanel extends JPanel {
 	private String panelTitle;
 	private Font myFont;
 
+	private static final String FORMER_EXIT_MEG="This Former alredy exist";
+	private static final String CODED_MEG="FORMER CREATE&UPDATE";
+	private static final String SEARCH_MEG="This Former not exist";
 	public String getFontName() {
 		return fontName;
 	}
@@ -132,16 +145,16 @@ public class FormerCreateFormJPanel extends JPanel {
 		this.headdingL.setText(this.panelTitle);
 		this.headdingL.setFont(myFont);
 
-		this.idL = this.addComponent(idL, milkManagementSystemService.xPoint,
-				milkManagementSystemService.yPoint,
-				milkManagementSystemService.lblWidth,
-				milkManagementSystemService.lblHeight);
-		this.idL.setText("Id");
-		this.idT=this.addComponent(idT, milkManagementSystemService.xPoint
-				+ milkManagementSystemService.lblWidth + 20,
-				milkManagementSystemService.yPoint,
-				milkManagementSystemService.tfWidth,
-				milkManagementSystemService.tflHeight);
+//		this.idL = this.addComponent(idL, milkManagementSystemService.xPoint,
+//				milkManagementSystemService.yPoint,
+//				milkManagementSystemService.lblWidth,
+//				milkManagementSystemService.lblHeight);
+//		this.idL.setText("Id");
+//		this.idT=this.addComponent(idT, milkManagementSystemService.xPoint
+//				+ milkManagementSystemService.lblWidth + 20,
+//				milkManagementSystemService.yPoint,
+//				milkManagementSystemService.tfWidth,
+//				milkManagementSystemService.tflHeight);
 	
 
 		this.nameL = this.addComponent(nameL,
@@ -212,14 +225,14 @@ public class FormerCreateFormJPanel extends JPanel {
 				milkManagementSystemService.tfWidth,
 				milkManagementSystemService.tflHeight);
 
-		this.idError = this.addComponent(idError,
-				milkManagementSystemService.xPoint
-						+ milkManagementSystemService.lblWidth
-						+ milkManagementSystemService.tfWidth + 40,
-				milkManagementSystemService.yPoint,
-				milkManagementSystemService.lblWidth,
-				milkManagementSystemService.lblHeight);
-		this.idError.setForeground(Color.RED);
+//		this.idError = this.addComponent(idError,
+//				milkManagementSystemService.xPoint
+//						+ milkManagementSystemService.lblWidth
+//						+ milkManagementSystemService.tfWidth + 40,
+//				milkManagementSystemService.yPoint,
+//				milkManagementSystemService.lblWidth,
+//				milkManagementSystemService.lblHeight);
+//		this.idError.setForeground(Color.RED);
 
 		this.nameError = this.addComponent(nameError,
 				milkManagementSystemService.xPoint
@@ -235,7 +248,7 @@ public class FormerCreateFormJPanel extends JPanel {
 						+ milkManagementSystemService.lblWidth
 						+ milkManagementSystemService.tfWidth + 40,
 				milkManagementSystemService.yPoint + 80,
-				milkManagementSystemService.lblWidth,
+				milkManagementSystemService.lblWidth+100,
 				milkManagementSystemService.lblHeight);
 		this.phoneNumError.setForeground(Color.RED);
 
@@ -279,7 +292,7 @@ public class FormerCreateFormJPanel extends JPanel {
 						+ milkManagementSystemService.tfWidth + 40,
 				milkManagementSystemService.yPoint
 						+ milkManagementSystemService.lblHeight + 30 + 200,
-				milkManagementSystemService.lblWidth,
+				milkManagementSystemService.lblWidth+100,
 				milkManagementSystemService.lblHeight + 50);
 		this.emailError.setForeground(Color.RED);
 
@@ -299,7 +312,7 @@ public class FormerCreateFormJPanel extends JPanel {
 		this.reset.setForeground(Color.BLUE);
 		this.add(this.reset);
 		/* update search */
-		List<String> formerids=persistenceManager.getFormerValues("id"); 
+		List<String> formerids=persistenceManager.getFormerByProperty("id");
 		String ids[]=new String[]{};
 		if(!CollectionUtils.isEmpty(formerids)){
 			ids=new String[formerids.size()];
@@ -313,39 +326,47 @@ public class FormerCreateFormJPanel extends JPanel {
 		// change the editor's document
 		new CustomInitialSelectionComboBox(formerIDCombo);
 
+//		formerIDCombo.setBounds(milkManagementSystemService.xPoint
+//				+ milkManagementSystemService.lblWidth * 2
+//				+ milkManagementSystemService.tfWidth + 40,
+//				milkManagementSystemService.yPoint,
+//				milkManagementSystemService.lblWidth + 20,
+//				milkManagementSystemService.lblHeight + 10);
+//		formerIDCombo.setMaximumRowCount(5);
 		formerIDCombo.setBounds(milkManagementSystemService.xPoint
-				+ milkManagementSystemService.lblWidth * 2
-				+ milkManagementSystemService.tfWidth + 40,
-				milkManagementSystemService.yPoint,
-				milkManagementSystemService.lblWidth + 20,
-				milkManagementSystemService.lblHeight + 10);
+		+ milkManagementSystemService.lblWidth * 2
+		+ milkManagementSystemService.tfWidth + 40,
+		milkManagementSystemService.yPoint
+				+ milkManagementSystemService.lblHeight + 20,
+		milkManagementSystemService.lblWidth + 20,
+		milkManagementSystemService.lblHeight + 10);
 		formerIDCombo.setMaximumRowCount(5);
 		this.add(formerIDCombo);
 
-		List<String> formerNames=persistenceManager.getFormerValues("name"); 
+		List<String> formerNames=persistenceManager.getFormerByProperty("name"); 
 		String names[]=new String[]{};
 		if(!CollectionUtils.isEmpty(formerNames)){
 			names=new String[formerNames.size()];
 			formerNames.toArray(names);
 		}
 		
-		formerNameCombo = new JComboBox(names);
-		// has to be editable
-		formerNameCombo.setEditable(true);
-
-		// change the editor's document
-		new CustomInitialSelectionComboBox(formerNameCombo);
-
-		// customerIDListScrollPane = new JScrollPane(customerIDCombo);
-		formerNameCombo.setBounds(milkManagementSystemService.xPoint
-				+ milkManagementSystemService.lblWidth * 2
-				+ milkManagementSystemService.tfWidth + 40,
-				milkManagementSystemService.yPoint
-						+ milkManagementSystemService.lblHeight + 20,
-				milkManagementSystemService.lblWidth + 20,
-				milkManagementSystemService.lblHeight + 10);
-		formerNameCombo.setMaximumRowCount(5);
-		this.add(formerNameCombo);
+//		formerNameCombo = new JComboBox(names);
+//		// has to be editable
+//		formerNameCombo.setEditable(true);
+//
+//		// change the editor's document
+//		new CustomInitialSelectionComboBox(formerNameCombo);
+//
+//		// customerIDListScrollPane = new JScrollPane(customerIDCombo);
+//		formerNameCombo.setBounds(milkManagementSystemService.xPoint
+//				+ milkManagementSystemService.lblWidth * 2
+//				+ milkManagementSystemService.tfWidth + 40,
+//				milkManagementSystemService.yPoint
+//						+ milkManagementSystemService.lblHeight + 20,
+//				milkManagementSystemService.lblWidth + 20,
+//				milkManagementSystemService.lblHeight + 10);
+//		formerNameCombo.setMaximumRowCount(5);
+//		this.add(formerNameCombo);
 
 		this.search = this.addComponent(this.search,
 				milkManagementSystemService.xPoint
@@ -358,33 +379,28 @@ public class FormerCreateFormJPanel extends JPanel {
 
 		this.submit.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				System.out
-						.println("Im in Former create and update submit action");
-				idError.setText("");
+				//idError.setText("");
 				nameError.setText("");
 				phoneNumError.setText("");
 				addressError.setText("");
 				emailError.setText("");
-				if ("".equals(idT.getText())) {
-
-					idError.setText("Can't be empty");
-				} else if ("".equals(nameT.getText())) {
+				 if ("".equals(nameT.getText())) {
 
 					nameError.setText("Can't be empty");
-				} else if ("".equals(phoneNumT.getText())) {
+				} else if ("".equals(phoneNumT.getText())||!MDMValidationUtil.isValidPhoneNum(phoneNumT.getText())) {
 
-					phoneNumError.setText("Can't be empty");
+					phoneNumError.setText("Please enter valid number");
 				} else if ("".equals(addressTA.getText())) {
 
 					addressError.setText("Can't be empty");
-				} else if ("".equals(emailT.getText())) {
+				} else if ("".equals(emailT.getText())||!MDMValidationUtil.isValidEmailAddress(emailT.getText())) {
 
-					emailError.setText("Can't be empty");
+					emailError.setText("Please enter valid email");
 				}
 				else{
-		
+		            
 					Former former=new Former();
-					former.setId(idT.getText().trim());
+					former.setId(phoneNumT.getText());
 					former.setName(nameT.getText());
 					former.setPhoneNum(phoneNumT.getText());
 					former.setStartdate(DateTimeUtil.convertdateToStringeWithTime(startdateTimePicker.getDate()));
@@ -393,8 +409,19 @@ public class FormerCreateFormJPanel extends JPanel {
 					address=address.replaceAll(",", "");
 					address=address.replace('\n', ':');
 					former.setAddress(address);
+					Former searchFormer=persistenceManager.getFormerBy(phoneNumT.getText().trim(), nameT.getText().trim());
+					if(searchFormer==null){
 					persistenceManager.save(former);
+					formerIDCombo.addItem(phoneNumT.getText());
+					collectionsStoredFormJPanel.addItemToIdCombox(phoneNumT.getText());
 					formEmpty();
+					}
+					else{
+						 JOptionPane.showMessageDialog(FormerCreateFormJPanel.this,
+								 FORMER_EXIT_MEG, CODED_MEG,
+						            JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
 			}
 		});
@@ -407,13 +434,22 @@ public class FormerCreateFormJPanel extends JPanel {
 		this.search.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				String forID = (String) formerIDCombo.getSelectedItem();
-				String forName = (String) formerNameCombo.getSelectedItem();
-				Former former=persistenceManager.getFormerBy(forID, forName);
-				idT.setText(former.getId());
+				//String forName = (String) formerNameCombo.getSelectedItem();
+				LOG.info("Search value id "+forID);
+				Former former=persistenceManager.getFormerBy(forID, "");
+				if(former!=null){
+				//idT.setText(former.getId());
 				nameT.setText(former.getName());
 				phoneNumT.setText(former.getPhoneNum());
 				addressTA.setText(former.getAddress());
 				emailT.setText(former.getEmail());
+				}
+				else{
+					 JOptionPane.showMessageDialog(FormerCreateFormJPanel.this,
+							 SEARCH_MEG, CODED_MEG,
+					            JOptionPane.ERROR_MESSAGE);
+					LOG.info("Search result is null");
+				}
 			}
 		});
 
@@ -462,12 +498,12 @@ public class FormerCreateFormJPanel extends JPanel {
 		return comp;
 	}
 public void formEmpty(){
-	idError.setText("");
+	//idError.setText("");
 	nameError.setText("");
 	phoneNumError.setText("");
 	addressError.setText("");
 	emailError.setText("");
-	idT.setText("");
+	//idT.setText("");
 	nameT.setText("");
 	phoneNumT.setText("");
 	addressTA.setText("");

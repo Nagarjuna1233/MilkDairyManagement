@@ -14,6 +14,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
@@ -74,6 +75,10 @@ public class CollectionsUpdateFormJPanel extends JPanel {
 	private JPanel collectionMonthDetailsJP;
 
 	private MilkManagementSystemService milkManagementSystemService;
+	
+	private static final String COL_EXIT_MEG="This Collection alredy exist";
+	private static final String CODED_MEG="COLLECTION CREATE&UPDATE";
+	private static final String SEARCH_MEG="This Collection not exist";
 
 	public void setMilkManagementSystemService(
 			MilkManagementSystemService milkManagementSystemService) {
@@ -286,7 +291,7 @@ public class CollectionsUpdateFormJPanel extends JPanel {
 						- milkManagementSystemService.tfWidth / 5, 400);
 		this.add(collectionMonthDetailsJP);
 
-		List<String> formerIds = persistenceManager.getFormerValues("id");
+		List<String> formerIds = persistenceManager.getFormerByProperty("id");
 		if (!CollectionUtils.isEmpty(formerIds)) {
 			ids = new String[formerIds.size()];
 			formerIds.toArray(ids);
@@ -308,7 +313,8 @@ public class CollectionsUpdateFormJPanel extends JPanel {
 		formerIDCombo.setMaximumRowCount(5);
 		this.add(formerIDCombo);
 
-		List<String> formerNames = persistenceManager.getFormerValues("name");
+		List<String> formerNames = persistenceManager
+				.getFormerByProperty("name");
 		if (!CollectionUtils.isEmpty(formerNames)) {
 			names = new String[formerNames.size()];
 			formerNames.toArray(names);
@@ -333,7 +339,7 @@ public class CollectionsUpdateFormJPanel extends JPanel {
 		this.add(formerNameCombo);
 
 		UtilDateModel model = new UtilDateModel();
-		//model.setDate(2016, 04, 16);
+		// model.setDate(2016, 04, 16);
 		model.setValue(new Date());
 		model.setSelected(true);
 
@@ -396,23 +402,26 @@ public class CollectionsUpdateFormJPanel extends JPanel {
 				String amPMStr = am.isSelected() ? "AM" : "PM";
 				String dateTime = DateTimeUtil.getOnlyDate((Date) datePicker
 						.getModel().getValue());
-				LOG.info("Form data " + "Former id" + forID + " Former name"
-						+ forName + " amPMStr" + amPMStr + " Date" + dateTime);
-				Collection searchCollection = persistenceManager
+				LOG.info("Form data " + "Former id " + forID + " Former name "
+						+ forName + " amPMStr " + amPMStr + " Date " + dateTime);
+				List<Collection> serachList = persistenceManager
 						.getCollectionsBy(forID, forName, amPMStr, dateTime);
-				if (null != searchCollection) {
+				if (CollectionUtils.isEmpty(serachList))
+				{
+					LOG.info("search Collection is Not found");
+					JOptionPane.showMessageDialog(
+							CollectionsUpdateFormJPanel.this,
+							SEARCH_MEG,
+							CODED_MEG, JOptionPane.ERROR_MESSAGE);
+				} 
+				else
+				{
+					Collection searchCollection = serachList.iterator().next();
 					formerNameTF.setText(searchCollection.getFormerName());
-					
 					formerIDTF.setText(searchCollection.getFormerID());
-					
 					milkPadTF.setText(searchCollection.getMilkPad());
-					
 					milkValueTF.setText(searchCollection.getMilkQuantity());
-					
 					milkPriceTF.setText(searchCollection.getMilkPrice());
-					
-				} else {
-					LOG.info("searchCollection is Not found");
 				}
 			}
 		});

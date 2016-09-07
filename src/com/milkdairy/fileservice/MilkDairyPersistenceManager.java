@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.milkdairy.managedobjects.Collection;
@@ -59,8 +58,7 @@ public class MilkDairyPersistenceManager {
 		if (String.valueOf(ManagedObjectsEnum.COLLECTION).equalsIgnoreCase(
 				className)) {
 			Collection value = (Collection) data;
-			//createCollectionTable();
-
+			createCollectionTable();
 			createCollectionsRow(value);
 			try {
 				showCollectionRow("SELECT * FROM Collection");
@@ -69,10 +67,8 @@ public class MilkDairyPersistenceManager {
 			}
 		} else if (String.valueOf(ManagedObjectsEnum.FORMER).equalsIgnoreCase(
 				className)) {
-
 			Former value = (Former) data;
-
-			// createFormerTable();
+			createFormerTable();
 			createFormerRow(value);
 			try {
 				showCollectionRow("SELECT * FROM Former");
@@ -128,9 +124,9 @@ public class MilkDairyPersistenceManager {
 	protected boolean createCollectionTable() {
 		PreparedStatement ps;
 		try {
-			ps = this.getConnection().prepareStatement("CREATE TABLE Collection (formerID VARCHAR(256),formerName VARCHAR(256),milkPad VARCHAR(256),milkQnty VARCHAR(256),milkPrice VARCHAR(256),timeStemp VARCHAR(256))");
-//			ps = this.getConnection().prepareStatement(
-//					"DROP TABLE Collection IF EXISTS");
+   ps = this.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS Collection (formerID VARCHAR(256),formerName VARCHAR(256),milkPad VARCHAR(256),milkQnty VARCHAR(256),milkPrice VARCHAR(256),timeStemp VARCHAR(256))");
+//	ps = this.getConnection().prepareStatement(
+//			"DROP TABLE Collection IF EXISTS");
 			ps.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -145,8 +141,11 @@ public class MilkDairyPersistenceManager {
 			ps = this
 					.getConnection()
 					.prepareStatement(
-							"CREATE TABLE Former (ID VARCHAR(256),Name VARCHAR(256),phonenum VARCHAR(256),imageurl VARCHAR(256),email VARCHAR(256),address VARCHAR(256),startdate VARCHAR(256),enddate VARCHAR(256))");
+							"CREATE TABLE IF NOT EXISTS Former (ID VARCHAR(256) ,Name VARCHAR(256),phonenum VARCHAR(256),imageurl VARCHAR(256),email VARCHAR(256),address VARCHAR(256),startdate VARCHAR(256),enddate VARCHAR(256),PRIMARY KEY (ID))");
 			ps.executeUpdate();
+//			ps = this.getConnection().prepareStatement(
+//					"DROP TABLE phonenum IF EXISTS");
+//					ps.execute();
 		} catch (SQLException e) {
 			
 			LOG.error(e.getMessage());
@@ -187,40 +186,40 @@ public class MilkDairyPersistenceManager {
 
 	}
 
-	public Former getFormerNameBY(String id, String name) {
-		Statement st = null;
-		ResultSet rs = null;
+//	public Former getFormerNameBY(String id, String name) {
+//		Statement st = null;
+//		ResultSet rs = null;
+//
+//		try {
+//			st = connection.createStatement();
+//			String query = "SELECT * FROM Former WHERE id='" + id + "'";
+//			if (!StringUtils.isEmpty(name)) {
+//				query.concat(" AND name='" + name + "'");
+//			}
+//			rs = st.executeQuery(query);
+//
+//			while (rs.next()) {
+//				Former former = new Former();
+//				former.setId(rs.getString("id"));
+//				former.setAddress(rs.getString("address"));
+//				former.setEmail(rs.getString("email"));
+//				former.setEnddate(rs.getString("enddate"));
+//				former.setImageUrl(rs.getString("imageurl"));
+//				former.setName(rs.getString("name"));
+//				former.setPhoneNum(rs.getString("phonenum"));
+//				former.setStartdate(rs.getString("startdate"));
+//				return former;
+//			}
+//
+//			st.close();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			LOG.error(e.getMessage());
+//		}
+//		return null;
+//	}
 
-		try {
-			st = connection.createStatement();
-			String query = "SELECT * FROM Former WHERE id='" + id + "'";
-			if (!StringUtils.isEmpty(name)) {
-				query.concat(" AND name='" + name + "'");
-			}
-			rs = st.executeQuery(query);
-
-			while (rs.next()) {
-				Former former = new Former();
-				former.setId(rs.getString("id"));
-				former.setAddress(rs.getString("address"));
-				former.setEmail(rs.getString("email"));
-				former.setEnddate(rs.getString("enddate"));
-				former.setImageUrl(rs.getString("imageurl"));
-				former.setName(rs.getString("name"));
-				former.setPhoneNum(rs.getString("phonenum"));
-				former.setStartdate(rs.getString("startdate"));
-				return former;
-			}
-
-			st.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			LOG.error(e.getMessage());
-		}
-		return null;
-	}
-
-	public List<String> getFormerValues(String collumnName) {
+	public List<String> getFormerByProperty(String collumnName) {
 
 		Statement st = null;
 		ResultSet rs = null;
@@ -256,11 +255,10 @@ public class MilkDairyPersistenceManager {
 		if (!"".equals(name) && "".equals(id)) {
 			buf.append(" name='" + name + "'");
 		}
-
+        LOG.info("Query "+buf.toString());
 		Statement st = null;
 		ResultSet rs = null;
 		 Former former=null;
-		List<String[]> list = new ArrayList<String[]>();
 		try {
 			st = connection.createStatement();
 			rs = st.executeQuery(buf.toString());
@@ -271,7 +269,7 @@ public class MilkDairyPersistenceManager {
 				former.setPhoneNum(rs.getString("phonenum"));
 				former.setImageUrl(rs.getString("imageurl"));
 				former.setEmail(rs.getString("email"));
-				former.setAddress(rs.getString("adress"));
+				former.setAddress(rs.getString("address"));
 				former.setStartdate(rs.getString("startdate"));
 				former.setEnddate(rs.getString("enddate"));
 			
@@ -304,14 +302,14 @@ public class MilkDairyPersistenceManager {
 
 	}
 
-	public Collection getCollectionsBy(String formerID, String name,
+	public List<Collection> getCollectionsBy(String formerID, String name,
 			String amPM, String date) {
 
-		// List<Collection> list=new ArrayList<Collection>();
+		List<Collection> list=new ArrayList<Collection>();
 		if ("".equals(formerID) && "".equals(name) && "".equals(amPM)
 				&& "".equals(date)) {
 			LOG.error("getCollectionsBy() arguments con't be empty");
-			return null;
+			return list;
 		}
 		StringBuffer query = new StringBuffer();
 		if (!"".equals(formerID)) {
@@ -327,8 +325,7 @@ public class MilkDairyPersistenceManager {
 					+ "%" + amPM + "'");
 			amPM = "";
 		} else if (!"".equals(date)) {
-			query.append("SELECT * FROM Collection WHERE timeStemp LIKE '"
-					+ "%" + date + "'");
+			query.append("SELECT * FROM Collection WHERE timeStemp LIKE '" + date + "%'");
 			date = "";
 		}
 		// query.append("SELECT * FROM Collection WHERE formerID='"+formerID+"'");
@@ -359,7 +356,7 @@ public class MilkDairyPersistenceManager {
 				temp.setMilkQuantity(rs.getString("milkQnty"));
 				temp.setTimeStemp(rs.getString("timeStemp"));
 				temp.setMilkPrice(rs.getString("milkPrice"));
-
+				list.add(temp);
 			}
 
 			st.close();
@@ -367,8 +364,7 @@ public class MilkDairyPersistenceManager {
 			LOG.error(e.getMessage());
 
 		}
-		// System.out.println("Collectiond size "+list.size());
-		return temp;
+		return list;
 	}
 
 	public List<Collection> getAllCollections() {
