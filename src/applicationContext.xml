@@ -47,6 +47,7 @@
 <property name="fontStyle" value="4"/>
 <property name="fontSize" value="20"/>
 <property name="color"  value="#80bfff"/>
+<property name="collectionsStoredFormJPanel" ref="collectionsStoredFormJPanel"/>
 </bean>
 
 <bean id="formerUpdateJPanel" class="com.milkdairy.former.FormerUpdateJPanel" init-method="init" >
