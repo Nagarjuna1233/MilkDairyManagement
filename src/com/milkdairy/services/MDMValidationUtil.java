@@ -10,6 +10,8 @@ public class MDMValidationUtil {
 	private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 	private static final String PHONE_PATTERN = "\\d{10}";
+	
+	private static final String AADHAR_PATTERN = "\\d{12}";
 
 	public static boolean isValidEmailAddress(String email) {
 		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
@@ -26,6 +28,12 @@ public class MDMValidationUtil {
 	 */
 	public static boolean isValidPhoneNum(String num) {
 		Pattern patternMobile = Pattern.compile(PHONE_PATTERN);
+		final Matcher matcherMobile = patternMobile.matcher(num);
+		return matcherMobile.matches();
+	}
+	
+	public static boolean isValidAadharNum(String num) {
+		Pattern patternMobile = Pattern.compile(AADHAR_PATTERN);
 		final Matcher matcherMobile = patternMobile.matcher(num);
 		return matcherMobile.matches();
 	}

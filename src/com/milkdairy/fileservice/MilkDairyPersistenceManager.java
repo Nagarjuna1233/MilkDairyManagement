@@ -78,7 +78,7 @@ public class MilkDairyPersistenceManager {
 		} else if (String.valueOf(ManagedObjectsEnum.PADVALUE)
 				.equalsIgnoreCase(className)) {
 			PadValue value = (PadValue) data;
-			// createPadValuesTable();
+			createPadValueTable();
 			createPadValueRow(value);
 			try {
 				showCollectionRow("SELECT * FROM PadValue");
@@ -108,11 +108,11 @@ public class MilkDairyPersistenceManager {
 
 	}
 
-	protected boolean createPadValuesTable() {
+	protected boolean createPadValueTable() {
 		PreparedStatement ps;
 		try {
 			ps = this.getConnection().prepareStatement(
-					"CREATE TABLE PadValue (value double,creationTime date)");
+					"CREATE TABLE PadValue (value REAL,creationTime VARCHAR(256))");
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
