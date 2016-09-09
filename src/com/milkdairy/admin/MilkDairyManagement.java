@@ -15,6 +15,7 @@ import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import com.milkdairy.fileservice.MilkDairyPersistenceManager;
 import com.milkdairy.users.LoggingService;
 import com.milkdairy.users.LoginJFrame;
 
@@ -38,9 +39,10 @@ public class MilkDairyManagement {
 						.getBean("milkDairyManagementJPanel");
 
 				UIManager.put("swing.boldmetal", Boolean.FALSE);
-
+				MilkDairyPersistenceManager milkManagementSystemService=(MilkDairyPersistenceManager)factory
+						.getBean("persistenceManager");
 				new LoginJFrame(milkDairyManagementJPanel,
-						(LoggingService) factory.getBean("loggingService"))
+						(LoggingService) factory.getBean("loggingService"),milkManagementSystemService)
 						.setVisible(true);
 
 			}

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import com.milkdairy.managedobjects.Collection;
 import com.milkdairy.managedobjects.Former;
 import com.milkdairy.managedobjects.PadValue;
+import com.milkdairy.managedobjects.User;
 import com.milkdairy.services.ManagedObjectsEnum;
 
 public class MilkDairyPersistenceManager {
@@ -86,6 +87,17 @@ public class MilkDairyPersistenceManager {
 				LOG.error(e.getMessage());
 			}
 		}
+		else if (String.valueOf(ManagedObjectsEnum.USER)
+				.equalsIgnoreCase(className)) {
+			User value = (User) data;
+			createUserTable();
+			createUserRow(value);
+			try {
+				showCollectionRow("SELECT * FROM User");
+			} catch (SQLException e) {
+				LOG.error(e.getMessage());
+			}
+		}
 		return true;
 	}
 
@@ -153,7 +165,77 @@ public class MilkDairyPersistenceManager {
 		}
 		return true;
 	}
+	
+	protected boolean createUserTable() {
+		PreparedStatement ps;
+		try {
+			ps = this
+					.getConnection()
+					.prepareStatement(
+							"CREATE TABLE IF NOT EXISTS User (fName VARCHAR(256),lName VARCHAR(256),userName VARCHAR(256),password VARCHAR(256),fevPetName VARCHAR(256),phoneNum VARCHAR(256),imageUrl VARCHAR(256),logingStatus INTEGER,email VARCHAR(256),aadharNum VARCHAR(256),PRIMARY KEY (userName,password))");
+			ps.executeUpdate();
+//			ps = this.getConnection().prepareStatement(
+//					"DROP TABLE phonenum IF EXISTS");
+//					ps.execute();
+		} catch (SQLException e) {
+			
+			LOG.error(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+	protected void createUserRow(User user) {
+		PreparedStatement ps;
+		try {
+			ps = this.getConnection().prepareStatement(
+					"INSERT INTO User VALUES('" + user.getfName() + "','"
+							+ user.getlName() + "','"
+							+ user.getUserName() + "','"
+							+ user.getPassword() + "','"
+							+ user.getFevPetName() + "','"
+							+ user.getPhoneNum() + "','"
+							+ user.getImageUrl() + "',"
+							+ user.getLogingStatus() + ",'"
+							+ user.getEmail() + "','"
+							+ user.getAadharNum() + "')");
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			LOG.error(e.getMessage());
 
+		}
+
+	}
+	public User getUser(String userID,String password){
+		Statement st = null;
+		ResultSet rs = null;
+		User user=null;
+	
+		try {
+			st = connection.createStatement();
+			rs = st.executeQuery("SELECT * FROM User WHERE userName='"+userID+"' AND password='"+password+"'");
+			
+			while (rs.next()) {
+				user=new User();
+				user.setfName(rs.getString("fName"));
+				user.setfName(rs.getString("lName"));
+				user.setUserName(rs.getString("userName"));
+				user.setPassword(rs.getString("password"));
+				user.setFevPetName(rs.getString("fevPetName"));
+				user.setPhoneNum(rs.getString("phoneNum"));
+				user.setImageUrl(rs.getString("imageUrl"));
+				user.setLogingStatus(rs.getInt("logingStatus"));
+				user.setEmail(rs.getString("email"));
+				user.setAadharNum(rs.getString("aadharNum"));
+				
+			}
+
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			LOG.error(e.getMessage());
+		}
+		return user;
+	}
 	protected void createFormerRow(Former former) {
 		PreparedStatement ps;
 		try {
