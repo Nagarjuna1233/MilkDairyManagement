@@ -236,6 +236,38 @@ public class MilkDairyPersistenceManager {
 		}
 		return user;
 	}
+	
+	public User getUser(String userID){
+		Statement st = null;
+		ResultSet rs = null;
+		User user=null;
+	
+		try {
+			st = connection.createStatement();
+			rs = st.executeQuery("SELECT * FROM User WHERE userName='"+userID+"'");
+			
+			while (rs.next()) {
+				user=new User();
+				user.setfName(rs.getString("fName"));
+				user.setfName(rs.getString("lName"));
+				user.setUserName(rs.getString("userName"));
+				user.setPassword(rs.getString("password"));
+				user.setFevPetName(rs.getString("fevPetName"));
+				user.setPhoneNum(rs.getString("phoneNum"));
+				user.setImageUrl(rs.getString("imageUrl"));
+				user.setLogingStatus(rs.getInt("logingStatus"));
+				user.setEmail(rs.getString("email"));
+				user.setAadharNum(rs.getString("aadharNum"));
+				
+			}
+
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			LOG.error(e.getMessage());
+		}
+		return user;
+	}
 	protected void createFormerRow(Former former) {
 		PreparedStatement ps;
 		try {
