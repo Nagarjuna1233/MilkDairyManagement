@@ -40,20 +40,23 @@ public class LoginJFrame extends javax.swing.JFrame {
 	private JFrame loginJF = this;
 	private LoggingService loggingService;
 	private JPanel signUpJP;
+	private JPanel foregetJP;
 	Container con;
 	MilkDairyPersistenceManager milkDairyPersistenceManager;
 	private boolean isSignUpDisplay = false;
+	private boolean isForegetDisplay = false;
 
 	private static final String EMPTY_ERROR_MG = "Can't be empty";
 
 	/**
 	 * Creates new form NewJFrame
 	 */
-	public LoginJFrame(JPanel mainPanel, LoggingService loggingService,MilkDairyPersistenceManager milkDairyPersistenceManager) {
+	public LoginJFrame(JPanel mainPanel, LoggingService loggingService,
+			MilkDairyPersistenceManager milkDairyPersistenceManager) {
 		initComponents();
 		this.milkDairyManagementJPanel = mainPanel;
 		this.loggingService = loggingService;
-		this.milkDairyPersistenceManager=milkDairyPersistenceManager;
+		this.milkDairyPersistenceManager = milkDairyPersistenceManager;
 	}
 
 	/**
@@ -158,11 +161,17 @@ public class LoginJFrame extends javax.swing.JFrame {
 						repaint();
 					}
 				}
-				
 
 			}
 		});
+		forgetPWBtn.addActionListener(new ActionListener() {
 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showForegetDialogBox();
+
+			}
+		});
 		con.add(titleLbl);
 		con.add(userNameLbl);
 		con.add(userNameTF);
@@ -189,13 +198,12 @@ public class LoginJFrame extends javax.swing.JFrame {
 				userErrorL.setText("Can't be empty");
 			} else if ("".equals(userPWF.getText())) {
 				userPWErrorL.setText("Can't be empty");
-			}else if(null==milkDairyPersistenceManager.getUser(userNameTF.getText().trim(), userPWF.getText().trim())){
-				JOptionPane.showMessageDialog(
-						LoginJFrame.this,
-						"User not exist",
-						"MDM Loging", JOptionPane.ERROR_MESSAGE);
-			}
-			else {
+			} else if (null == milkDairyPersistenceManager.getUser(userNameTF
+					.getText().trim(), userPWF.getText().trim())) {
+				JOptionPane.showMessageDialog(LoginJFrame.this,
+						"User not exist", "MDM Loging",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
 				loginJF.dispose();
 				// TODO Auto-generated method stub
 				new MilkDairyManagementJFrame(milkDairyManagementJPanel);
@@ -234,7 +242,7 @@ public class LoginJFrame extends javax.swing.JFrame {
 	private JLabel signUpURPWL;
 	private JLabel signUpURPWEL;
 	private JPasswordField signUpURPWPF;
-	
+
 	private JButton signUpClsBtn;
 
 	private User validateNdGetUser() {
@@ -278,7 +286,8 @@ public class LoginJFrame extends javax.swing.JFrame {
 		}
 		return user;
 	}
-	private void doSignUpErrorFormEmpty(){
+
+	private void doSignUpErrorFormEmpty() {
 		signUpUFNameEL.setText("");
 		signUpULNameEL.setText("");
 		signUpUPhoneEL.setText("");
@@ -289,16 +298,117 @@ public class LoginJFrame extends javax.swing.JFrame {
 		signUpURPWEL.setText("");
 		signUpUPWEL.setText("");
 	}
-//	private JPanel showForegetForm() {
-//		JPanel panel = new JPanel();
-//		// panel.setBackground(Color.darkGray);
-//		// panel.setSize(200,200);
-//		GridLayout layout = new GridLayout(9, 3);
-//		layout.setHgap(10);
-//		layout.setVgap(10);
-//		panel.setLayout(layout);
-//		panel.setVisible(true);
-//		}
+
+	private void showForegetDialogBox() {
+		if ("".equals(userNameTF.getText())) {
+			userErrorL.setText(EMPTY_ERROR_MG);
+			return;
+		}
+		User user = milkDairyPersistenceManager.getUser(userNameTF.getText()
+				.toString());
+		String name = JOptionPane.showInputDialog(LoginJFrame.this,
+				"What's your's favorite pet name?");
+		if (null != user&&name!=null) {
+			if (!name.equalsIgnoreCase(user.getFevPetName())) {
+				foregetJP = showForeGetForm();
+				foregetJP.setBounds(5, signUpBtn.getY() + 0, 210, 70);
+				con.add(foregetJP);
+				setSize(600, 600);
+				revalidate();
+				repaint();
+				isForegetDisplay=true;
+			}
+		}
+	}
+
+	JLabel foregetUPWL;
+	//JLabel foregetUPWEL;
+	JPasswordField foregetUPWPF;
+
+	JLabel foregetURPWL;
+	//JLabel foregetURPWEL;
+	JPasswordField foregetURPWPF;
+
+	JButton foregetUpdateBtn;
+	JButton foregeClsBtn;
+
+	private JPanel showForeGetForm() {
+		JPanel panel = new JPanel();
+		GridLayout layout = new GridLayout(3, 2);
+		layout.setHgap(5);
+		layout.setVgap(5);
+		panel.setLayout(layout);
+		panel.setVisible(true);
+		
+		foregetUPWL = new JLabel("Password");
+		//foregetUPWEL = new JLabel();
+		foregetUPWPF = new JPasswordField();
+		//foregetUPWEL.setForeground(Color.RED);
+
+		foregetURPWL = new JLabel("RePassword");
+		//foregetURPWEL = new JLabel();
+		foregetURPWPF = new JPasswordField();
+		//foregetURPWEL.setForeground(Color.RED);
+
+		foregetUpdateBtn = new JButton("Update");
+		foregeClsBtn = new JButton("Close");
+
+		panel.add(foregetUPWL);
+		panel.add(foregetUPWPF);
+		//panel.add(foregetUPWEL);
+
+		panel.add(foregetURPWL);
+		panel.add(foregetURPWPF);
+		//panel.add(foregetURPWEL);
+
+		panel.add(foregetUpdateBtn);
+		foregetUpdateBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				//foregetUPWEL.setText("");
+				//foregetURPWEL.setText("");
+				String forgetUPassword = foregetUPWPF.getText().trim();
+				String forgetRUPassword = foregetURPWPF.getText().trim();
+				if ("".equals(forgetUPassword) || "".equals(forgetRUPassword)) {
+					JOptionPane.showMessageDialog(
+							LoginJFrame.this,
+							EMPTY_ERROR_MG,
+							"Foreget Password", JOptionPane.ERROR_MESSAGE);
+				} else if (!forgetUPassword.equals(forgetRUPassword)) {
+					JOptionPane.showMessageDialog(
+							LoginJFrame.this,
+							"Passwords r not matched",
+							"Foreget Password", JOptionPane.ERROR_MESSAGE);
+				} else {
+					con.remove(foregetJP);
+					if(!isSignUpDisplay){
+					setSize(600, 300);
+					}
+					revalidate();
+					repaint();
+					isForegetDisplay=false;
+				}
+
+			}
+		});
+		panel.add(foregeClsBtn);
+		foregeClsBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				con.remove(foregetJP);
+				if(!isSignUpDisplay){
+					setSize(600, 300);
+					}
+				revalidate();
+				repaint();
+				isForegetDisplay=false;
+			}
+		});
+		return panel;
+	}
+
 	private JPanel showSignUpForm() {
 		JPanel panel = new JPanel();
 		// panel.setBackground(Color.darkGray);
@@ -314,56 +424,57 @@ public class LoginJFrame extends javax.swing.JFrame {
 		signUpUFNameEL = new JLabel();
 		signUpUFNameEL.setForeground(Color.RED);
 
-
 		signUpULNameL = new JLabel("Last Name");
 		signUpULNameTF = new JTextField();
 		signUpULNameEL = new JLabel();
 		signUpULNameEL.setForeground(Color.RED);
-		
+
 		signUpUPhoneL = new JLabel("Phone");
 		signUpUPhoneTF = new JTextField();
 		signUpUPhoneEL = new JLabel();
 		signUpUPhoneEL.setForeground(Color.RED);
-		
+
 		signUpUEmailL = new JLabel("Email");
 		signUpUEmailTF = new JTextField();
 		signUpUEmailEL = new JLabel();
 		signUpUEmailEL.setForeground(Color.RED);
-		
+
 		signUpUAadharL = new JLabel("Aadhar");
 		signUpUAadharTF = new JTextField();
 		signUpUAadharEL = new JLabel();
 		signUpUAadharEL.setForeground(Color.RED);
-		
+
 		signUpUIDL = new JLabel("User ID");
 		signUpUIDTF = new JTextField();
 		signUpUIDEL = new JLabel();
 		signUpUIDEL.setForeground(Color.RED);
-		
+
 		signUpUPWL = new JLabel("Passward");
 		signUpUPWPF = new JPasswordField();
 		signUpUPWEL = new JLabel();
 		signUpUPWEL.setForeground(Color.RED);
-		
+
 		signUpURPWL = new JLabel("RPassward");
 		signUpURPWPF = new JPasswordField();
 		signUpURPWEL = new JLabel();
 		signUpURPWEL.setForeground(Color.RED);
-		
-		signUpClsBtn=new JButton("Close singup");
+
+		signUpClsBtn = new JButton("Close singup");
 		signUpClsBtn.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				con.remove(signUpJP);
+				if(!isForegetDisplay){
 				setSize(600, 300);
+				}
 				isSignUpDisplay = false;
 				revalidate();
 				repaint();
-				
+
 			}
 		});
-		
+
 		panel.add(signUpUFNameL);
 		panel.add(signUpUFNameTF);
 		panel.add(signUpUFNameEL);
@@ -395,13 +506,12 @@ public class LoginJFrame extends javax.swing.JFrame {
 		panel.add(signUpURPWL);
 		panel.add(signUpURPWPF);
 		panel.add(signUpURPWEL);
-		
+
 		panel.add(signUpClsBtn);
 
 		return panel;
 	}
 
-	
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 	private JButton loginBtn;
 	private JLabel userPWL;
