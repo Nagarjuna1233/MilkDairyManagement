@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import com.milkdairy.fileservice.MilkDairyPersistenceManager;
 import com.milkdairy.managedobjects.Collection;
 import com.milkdairy.managedobjects.Former;
+import com.milkdairy.managedobjects.PadValue;
 import com.milkdairy.services.CustomInitialSelectionComboBox;
 import com.milkdairy.services.DateLabelFormatter;
 import com.milkdairy.services.DateTimePicker;
@@ -104,7 +105,14 @@ public class CollectionsStoredFormJPanel extends JPanel {
 	private JDatePickerImpl searchDatePicker;
 	private JButton searchResetBtn;
 	private final static String AM_PM[] = { "AM", "PM" };
+	private final static String PAD_VALUES[] = { "1", "2","3","4","5","6", "7","8","9","10",
+		                                         "11", "12","13","14","15","16", "17","18","19","20",
+		                                         "21", "22","23","24","25","26", "27","28","29","30"
+	                                           };
 	JScrollPane scrollPane;
+	
+	JComboBox<String> padValuComboBox;
+	JLabel padValueL;
 
 	public void setMilkManagementSystemService(
 			MilkManagementSystemService milkManagementSystemService) {
@@ -124,6 +132,35 @@ public class CollectionsStoredFormJPanel extends JPanel {
 		System.setProperty("collectionsStoredFormColor", this.color);
 		this.setBackground(Color.getColor("collectionsStoredFormColor"));
 		List<String> formerIds = persistenceManager.getFormerByProperty("id");
+		
+		padValuComboBox=new JComboBox(PAD_VALUES);
+		padValuComboBox.setEditable(true);
+		new CustomInitialSelectionComboBox(padValuComboBox);
+		this.padValueL = this.addComponent(padValueL,
+				10,
+				10,
+				70,
+				milkManagementSystemService.lblHeight);
+		this.padValueL.setText("Pad Value");
+		padValueL.setForeground(Color.RED);
+
+		padValuComboBox.setBounds(padValueL.getX()+padValueL.getWidth(),
+				10,
+				50,
+				milkManagementSystemService.tflHeight);
+		this.add(padValuComboBox);
+		PadValue padValue=persistenceManager.getPadValue();
+		if(null!=padValue){
+		padValuComboBox.setSelectedIndex((int)padValue.getValue());
+		}else{
+			padValue=new PadValue();
+			padValue.setCreationTime(DateTimeUtil.convertdateToStringeWithTime(new Date()));
+			padValue.setValue((float) 7.0);
+			persistenceManager.createPadValueRow(padValue);
+			padValuComboBox.setSelectedIndex((int)padValue.getValue());
+		}
+
+		
 		if (!CollectionUtils.isEmpty(formerIds)) {
 			ids = new String[formerIds.size()];
 			formerIds.toArray(ids);
@@ -447,7 +484,23 @@ public class CollectionsStoredFormJPanel extends JPanel {
 		}
 
 	}
-
+	class PadValueComboBoxItemLister implements ItemListener {
+		public void itemStateChanged(ItemEvent paramItemEvent) {
+			if (paramItemEvent.getStateChange() == ItemEvent.SELECTED) {
+				String item = (String) paramItemEvent.getItem();
+				List<Collection> amPmColList = persistenceManager
+						.getCollectionsBy("", "", item, "");
+				if(CollectionUtils.isEmpty(amPmColList)){
+					JOptionPane.showMessageDialog(
+							CollectionsStoredFormJPanel.this,
+							"Collection not exist",
+							"Coded Message", JOptionPane.INFORMATION_MESSAGE);
+				}else{
+				refreshDataFilter(amPmColList);
+				}
+			}
+		}
+	};
 	class AMPMComboBoxItemLister implements ItemListener {
 		public void itemStateChanged(ItemEvent paramItemEvent) {
 			if (paramItemEvent.getStateChange() == ItemEvent.SELECTED) {
