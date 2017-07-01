@@ -71,6 +71,7 @@ public class MilkDairyPersistenceManager {
 			Former value = (Former) data;
 			createFormerTable();
 			createFormerRow(value);
+			
 			try {
 				showCollectionRow("SELECT * FROM Former");
 			} catch (SQLException e) {
@@ -147,6 +148,29 @@ public class MilkDairyPersistenceManager {
 		return true;
 	}
 
+	public PadValue getPadValue(){
+		Statement st = null;
+		ResultSet rs = null;
+		PadValue value=null;
+	
+		try {
+			st = connection.createStatement();
+			rs = st.executeQuery("SELECT * FROM PadValue");
+
+			while (rs.next()) {
+				value=new PadValue();
+				value.setValue(rs.getFloat(1));
+				value.setCreationTime(rs.getString(2));
+				break;
+			}
+
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			LOG.error(e.getMessage());
+		}
+		return value;
+	}
 	protected boolean createFormerTable() {
 		PreparedStatement ps;
 		try {
@@ -286,12 +310,12 @@ public class MilkDairyPersistenceManager {
 
 	}
 
-	protected void createPadValueRow(PadValue padValue) {
+	public void createPadValueRow(PadValue padValue) {
 		PreparedStatement ps;
 		try {
 			ps = this.getConnection().prepareStatement(
 					"INSERT INTO PadValue VALUES(" + padValue.getValue()
-							+ "','" + padValue.getCreationTime() + ")");
+							+ "','" + padValue.getCreationTime() + "')");
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			LOG.error(e.getMessage());
@@ -300,38 +324,6 @@ public class MilkDairyPersistenceManager {
 
 	}
 
-//	public Former getFormerNameBY(String id, String name) {
-//		Statement st = null;
-//		ResultSet rs = null;
-//
-//		try {
-//			st = connection.createStatement();
-//			String query = "SELECT * FROM Former WHERE id='" + id + "'";
-//			if (!StringUtils.isEmpty(name)) {
-//				query.concat(" AND name='" + name + "'");
-//			}
-//			rs = st.executeQuery(query);
-//
-//			while (rs.next()) {
-//				Former former = new Former();
-//				former.setId(rs.getString("id"));
-//				former.setAddress(rs.getString("address"));
-//				former.setEmail(rs.getString("email"));
-//				former.setEnddate(rs.getString("enddate"));
-//				former.setImageUrl(rs.getString("imageurl"));
-//				former.setName(rs.getString("name"));
-//				former.setPhoneNum(rs.getString("phonenum"));
-//				former.setStartdate(rs.getString("startdate"));
-//				return former;
-//			}
-//
-//			st.close();
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			LOG.error(e.getMessage());
-//		}
-//		return null;
-//	}
 
 	public List<String> getFormerByProperty(String collumnName) {
 

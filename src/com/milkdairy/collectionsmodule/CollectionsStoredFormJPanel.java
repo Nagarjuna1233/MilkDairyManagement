@@ -21,8 +21,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -385,6 +388,11 @@ public class CollectionsStoredFormJPanel extends JPanel {
 			}
 		});
 
+		this.milkValueTF.getDocument().addDocumentListener(new PQPriceDocumentChangeListener());
+		this.milkPadTF.getDocument().addDocumentListener(new PQPriceDocumentChangeListener());
+
+	
+	     milkPriceTF.setText("");
 		this.resetBtn.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				doFormEmpty();
@@ -574,6 +582,31 @@ public class CollectionsStoredFormJPanel extends JPanel {
 		}
 
 	};
+	
+	class PQPriceDocumentChangeListener implements DocumentListener
+	{
+		  public void changedUpdate(DocumentEvent e) {
+			  setPricValue();
+			  }
+			  public void removeUpdate(DocumentEvent e) {
+				  setPricValue();
+			  }
+			  public void insertUpdate(DocumentEvent e) {
+				
+				  setPricValue();
+			  }
+			  void setPricValue(){
+				  String milkPad=milkPadTF.getText();
+					String milkValue=milkValueTF.getText();
+					if(StringUtils.isNotEmpty(milkPad)
+					  &&StringUtils.isNotEmpty(milkValue)){
+			       float selectedPadVal=Float.valueOf((String)padValuComboBox.getSelectedItem());
+			       String totalPrice=String.valueOf(Float.valueOf(milkPad)*Float.valueOf(milkValue)*selectedPadVal);
+					LOG.info("milk total price "+totalPrice);
+					milkPriceTF.setText(totalPrice.substring(0, totalPrice.indexOf('.')));
+					}
+			  }
+			}
 	
 	class FormerIDComboxItemListener implements ItemListener {
 		@Override

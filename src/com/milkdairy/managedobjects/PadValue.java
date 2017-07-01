@@ -1,24 +1,23 @@
 package com.milkdairy.managedobjects;
 
-import java.util.Date;
 
 public class PadValue {
 	
-	private double value;
-	private Date creationTime;
+	private float value;
+	private String creationTime;
 	public PadValue(){
 		
 	}
-	public double getValue() {
+	public float getValue() {
 		return value;
 	}
-	public void setValue(double value) {
+	public void setValue(float value) {
 		this.value = value;
 	}
-	public Date getCreationTime() {
+	public String getCreationTime() {
 		return creationTime;
 	}
-	public void setCreationTime(Date creationTime) {
+	public void setCreationTime(String creationTime) {
 		this.creationTime = creationTime;
 	}
 	

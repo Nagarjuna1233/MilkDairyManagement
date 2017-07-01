@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
@@ -71,8 +70,8 @@ public class MilkDairyFileUtiles {
 			}
 			if (targetFile.exists()) {
 				 List<String> lines = FileUtils.readLines(targetFile);
-				 List<String> updatedLines = lines.stream().filter(s -> !s.contains(pk)).collect(Collectors.toList());
-				 FileUtils.writeLines(targetFile,updatedLines, false);
+//				 List<String> updatedLines = lines.stream().filter(s -> !s.contains(pk)).collect(Collectors.toList());
+//				 FileUtils.writeLines(targetFile,updatedLines, false);
 				 writeData(targetFile,data);
 				return true;
 				
@@ -95,8 +94,8 @@ public boolean deletRow(String pk,String fileType){
 			}
 			if (targetFile.exists()) {
 				 List<String> lines = FileUtils.readLines(targetFile);
-				 List<String> updatedLines = lines.stream().filter(s -> !s.contains(pk)).collect(Collectors.toList());
-				 FileUtils.writeLines(targetFile,updatedLines, false);
+				// List<String> updatedLines = lines.stream().filter(s -> !s.contains(pk)).collect(Collectors.toList());
+				// FileUtils.writeLines(targetFile,updatedLines, false);
 				return true;
 				
 			}
